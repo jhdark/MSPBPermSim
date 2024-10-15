@@ -1,0 +1,16 @@
+name: libra-transport-env
+
+channels:
+  - conda-forge
+  - defaults
+
+dependencies:
+  - pip
+  - fenics
+  - matplotlib
+  - numpy<1.25  # needed to avoid deprecation warning
+  - mshr
+  - ipykernel  # needed to run jupyter notebooks
+  - scipy
+  - pip:
+    - festim>1.1
