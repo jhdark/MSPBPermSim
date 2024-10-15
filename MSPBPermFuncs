@@ -1,0 +1,69 @@
+import festim as F
+import numpy as np
+import h_transport_materials as htm
+import matplotlib.pyplot as plt
+
+
+my_model = F.Simulation()
+
+my_model.mesh = F.MeshFromVertices(
+    vertices=np.linspace(0, 3e-4, num=1001)
+)
+
+diffusivities = htm.diffusivities.filter(material="flibe").filter(author=["nakamura", "anderl"])
+k = t_transport_sim(
+                T,
+                mesh_fenics,
+                u,
+                volume_markers=volume_markers,
+                surface_markers=surface_markers,
+                correspondance_dict=correspondance_dict,
+                D_0 = diffusivity.pre_exp.magnitude, 
+                E_D = diffusivity.act_energy.magnitude
+            )
+
+# D, E_d source: "nakamura_hydrogen_2015"
+flibe_mat = F.Material(
+    id=1,
+    D_0=D_0,
+    E_D=E_D,
+)
+my_model.materials = F.Materials([flibe_mat])
+
+
+my_model.T = 500
+
+P_up = 100  # Pa
+
+my_model.boundary_conditions = [
+    F.SievertsBC(surfaces=1, S_0=4.02e21, E_S=1.04, pressure=P_up),
+    F.DirichletBC(surfaces=2, value=0, field=0)
+]
+
+my_model.settings = F.Settings(
+    absolute_tolerance=1e-2,
+    relative_tolerance=1e-10,
+    final_time=100  # s
+    )
+
+my_model.dt = F.Stepsize(initial_value=1/20)
+
+derived_quantities = F.DerivedQuantities([F.HydrogenFlux(surface=2)], show_units=True)
+
+my_model.exports = [derived_quantities]
+my_model.initialise()
+
+my_model.run()
+
+times = derived_quantities.t
+computed_flux = derived_quantities.filter(surfaces=2).data
+
+D = 1.9e-7*np.exp(-0.2/F.k_B/500)
+S = 4.02e21*np.exp(-1.04/F.k_B/500)
+
+
+plt.scatter(times, np.abs(computed_flux), alpha=0.2, label="computed")
+plt.ylim(bottom=0)
+plt.xlabel("Time (s)")
+plt.ylabel("Downstream flux (H/m2/s)")
+plt.show()

@@ -1,4 +1,4 @@
-name: libra-transport-env
+name: MSPB-env
 
 channels:
   - conda-forge
@@ -9,7 +9,6 @@ dependencies:
   - fenics
   - matplotlib
   - numpy<1.25  # needed to avoid deprecation warning
-  - mshr
   - ipykernel  # needed to run jupyter notebooks
   - scipy
   - pip:
