@@ -4,8 +4,6 @@ import numpy as np
 import h_transport_materials as htm
 import matplotlib.pyplot as plt
 
-my_model = F.Simulation()
-
 def AssignMaterials(my_model, barrier_diffusivity, barrier_solubility, substrate_diffusivity, substrate_solubility):
     """
     takes in the model and htm properties groups and applies them to the model
