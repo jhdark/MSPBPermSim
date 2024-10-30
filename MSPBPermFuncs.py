@@ -39,9 +39,9 @@ def AssignMaterials(my_model, barrier_diffusivity, barrier_solubility, substrate
 
 def MeshModel(my_model, t_barrier, t_substrate):
     # Meshing model
-    vertices_left = np.linspace(0, t_barrier, num=3)
+    vertices_left = np.linspace(0, t_barrier, num=100)
     vertices_mid = np.linspace(t_barrier,
-        t_barrier + t_substrate, num=10)
+        t_barrier + t_substrate, num=100)
     vertices = np.concatenate([vertices_left, vertices_mid])
 
     my_model.mesh = F.MeshFromVertices(vertices)
