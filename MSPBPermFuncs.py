@@ -65,16 +65,7 @@ def ApplyBCs(my_model, T, P_up, barrier_solubility):
 
     my_model.boundary_conditions = [left_bc, right_bc]
 
-def RunModel(my_model, final_time, folder):
-    my_model.settings = F.Settings(
-        absolute_tolerance=1e6,
-        relative_tolerance=1e-10,
-        final_time=final_time  # s
-        )
-
-    my_model.dt = F.Stepsize(initial_value=100,
-                            stepsize_change_ratio = 1.1)
-
+def RunModel(my_model, folder):
     
     derived_quantities = F.DerivedQuantities([F.HydrogenFlux(surface=2)], show_units=True)
     txt_export = F.TXTExport(
