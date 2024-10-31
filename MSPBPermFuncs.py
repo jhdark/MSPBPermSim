@@ -3,6 +3,7 @@ import fenics as f
 import numpy as np
 import h_transport_materials as htm
 import matplotlib.pyplot as plt
+from scipy.integrate import cumulative_trapezoid
 
 def assign_materials(my_model, barrier_diffusivity, barrier_solubility, substrate_diffusivity, substrate_solubility):
     """
@@ -82,3 +83,13 @@ def run_model(my_model, folder):
 
     return derived_quantities
 
+def pressure_from_flux(flux, t, d, V, T):
+    integrated_flux = cumulative_trapezoid(flux, t, initial=0)
+    A = np.pi * (d / 2) ** 2  # m^2
+    n = integrated_flux * A / (6.022 * 10**23)  # number of hydrogen atoms in mols
+
+    R = 8.314  # J/mol/K
+
+    # Calculate pressure
+    P = n * R * T / V  # Pa
+    return P
