@@ -4,7 +4,7 @@ import numpy as np
 import h_transport_materials as htm
 import matplotlib.pyplot as plt
 
-def AssignMaterials(my_model, barrier_diffusivity, barrier_solubility, substrate_diffusivity, substrate_solubility):
+def assign_materials(my_model, barrier_diffusivity, barrier_solubility, substrate_diffusivity, substrate_solubility):
     """
     takes in the model and htm properties groups and applies them to the model
     """
@@ -37,7 +37,7 @@ def AssignMaterials(my_model, barrier_diffusivity, barrier_solubility, substrate
     )
     my_model.materials = F.Materials([barrier, steel_mat])
 
-def MeshModel(my_model, t_barrier, t_substrate):
+def mesh_model(my_model, t_barrier, t_substrate):
     # Meshing model
     vertices_left = np.linspace(0, t_barrier, num=100)
     vertices_mid = np.linspace(t_barrier,
@@ -46,7 +46,7 @@ def MeshModel(my_model, t_barrier, t_substrate):
 
     my_model.mesh = F.MeshFromVertices(vertices)
 
-def ApplyBCs(my_model, T, P_up, barrier_solubility):
+def apply_BCs(my_model, T, P_up, barrier_solubility):
     # Temperature of substrate
     my_model.T = T
 
@@ -65,7 +65,7 @@ def ApplyBCs(my_model, T, P_up, barrier_solubility):
 
     my_model.boundary_conditions = [left_bc, right_bc]
 
-def RunModel(my_model, folder):
+def run_model(my_model, folder):
     
     derived_quantities = F.DerivedQuantities([F.HydrogenFlux(surface=2)], show_units=True)
     txt_export = F.TXTExport(
