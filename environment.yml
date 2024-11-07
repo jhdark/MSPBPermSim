@@ -11,5 +11,7 @@ dependencies:
   - numpy<1.25  # needed to avoid deprecation warning
   - ipykernel  # needed to run jupyter notebooks
   - scipy
+  - pint
   - pip:
     - festim>1.1
+    - h_transport_materials
