@@ -32,30 +32,29 @@ substrate_E_Kd = substrate_diss.act_energy.magnitude
 
 k_b = F.k_B
 T = 600
-kd = substrate_Kd_0 * np.exp(substrate_E_Kd / (k_b * T))
-ks = substrate_S_0 * np.exp(substrate_E_S / (k_b * T))
-D = substrate_D_0 * np.exp(substrate_E_D / (k_b * T))
+kd = substrate_Kd_0 * np.exp(-substrate_E_Kd / (k_b * T))
+ks = substrate_S_0 * np.exp(-substrate_E_S / (k_b * T))
+D = substrate_D_0 * np.exp(-substrate_E_D / (k_b * T))
 e = 5e-04
 P = 100
 
 
 def W_testing(P=100, e=5e-04, T=600):
 
-    T = 600
-    kd = substrate_Kd_0 * np.exp(substrate_E_Kd / (k_b * T))
-    ks = substrate_S_0 * np.exp(substrate_E_S / (k_b * T))
-    D = substrate_D_0 * np.exp(substrate_E_D / (k_b * T))
+    kd = substrate_Kd_0 * np.exp(-substrate_E_Kd / (k_b * T))
+    ks = substrate_S_0 * np.exp(-substrate_E_S / (k_b * T))
+    D = substrate_D_0 * np.exp(-substrate_E_D / (k_b * T))
 
     return (kd * (P**0.5) * e) / (D * ks)
 
 
-P_testing = np.geomspace(1e-08, 1e08, num=100)
+P_testing = np.geomspace(1, 1e08, num=100)
 e_testing = np.geomspace(1e-05, 1, num=100)
 T_testing = np.linspace(300, 900, num=100)
 
 W_test_P = W_testing(P=P_testing)
-W_test_e = W_testing(e_testing)
-W_test_T = W_testing(T_testing)
+W_test_e = W_testing(e=e_testing)
+W_test_T = W_testing(T=T_testing)
 
 plt.figure()
 plt.plot(P_testing, W_test_P, color="black")
