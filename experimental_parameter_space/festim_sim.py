@@ -10,12 +10,6 @@ substrate_D = htm.diffusivities.filter(material="inconel_600").filter(
 substrate_D_0 = substrate_D.pre_exp.magnitude
 substrate_E_D = substrate_D.act_energy.magnitude
 
-# substrate_S = htm.solubilities.filter(material="inconel_600").filter(
-#     author="kishimoto"
-# )[0]
-# substrate_S_0 = substrate_S.pre_exp.magnitude
-# substrate_E_S = substrate_S.act_energy.magnitude
-
 substrate_recomb = htm.recombination_coeffs.filter(material="inconel_600").filter(
     author="rota"
 )[0]
@@ -27,12 +21,6 @@ substrate_diss = htm.dissociation_coeffs.filter(material="inconel_600").filter(
 )[0]
 substrate_Kd_0 = substrate_diss.pre_exp.magnitude
 substrate_E_Kd = substrate_diss.act_energy.magnitude
-
-
-# Ks = substrate_S_0 * np.exp(-substrate_E_S / (F.k_B * 500))
-# Kr = substrate_Kr_0 * np.exp(-substrate_E_Kr / (F.k_B * 500))
-# Kd = substrate_Kd_0 * np.exp(-substrate_E_Kd / (F.k_B * 500))
-
 
 substrate_S = htm.Solubility(
     S_0=(substrate_diss.pre_exp / substrate_recomb.pre_exp) ** 0.5,
@@ -225,94 +213,95 @@ def festim_model_barrier(T, pressure, foldername):
     model_barrier.run()
 
 
-# festim_model_standard(
-#     T=400,
-#     pressure=1e3,
-#     foldername="results/transient",
-#     steady=False,
-#     regime="surf",
-#     atol=1.5e3,
-# )
+if __name__ == "__main__":
+    # festim_model_standard(
+    #     T=400,
+    #     pressure=1e3,
+    #     foldername="results/transient",
+    #     steady=False,
+    #     regime="surf",
+    #     atol=1.5e3,
+    # )
 
-pressure_values = [1e0, 1e1, 1e2, 1e3, 1e4, 1e5]
-atols = [2e-01, 2e0, 2e01, 2e2, 2e3, 2e4]
-final_times = [1e7, 1e5, 2e4]
+    pressure_values = [1e0, 1e1, 1e2, 1e3, 1e4, 1e5]
+    atols = [2e-01, 2e0, 2e01, 2e2, 2e3, 2e4]
+    final_times = [1e7, 1e5, 2e4]
 
-atols_all_Ts = [
-    [
-        1e-06,
-        1e-05,
-        1e-04,
-        1e-03,
-        1e-02,
-        1e-01,
-    ],
-    [
-        1e-04,
-        1e-03,
-        1e-02,
-        1e-01,
-        1e0,
-        1e1,
-    ],
-    [
-        1e-02,
-        1e-01,
-        1e00,
-        1e1,
-        2e1,
-        2e2,
-    ],
-]
-# test_temp_values = np.linspace(300, 800, num=10)
-# test_temp_values = [300, 400, 500, 600, 700, 800]
+    atols_all_Ts = [
+        [
+            1e-06,
+            1e-05,
+            1e-04,
+            1e-03,
+            1e-02,
+            1e-01,
+        ],
+        [
+            1e-04,
+            1e-03,
+            1e-02,
+            1e-01,
+            1e0,
+            1e1,
+        ],
+        [
+            1e-02,
+            1e-01,
+            1e00,
+            1e1,
+            2e1,
+            2e2,
+        ],
+    ]
+    # test_temp_values = np.linspace(300, 800, num=10)
+    # test_temp_values = [300, 400, 500, 600, 700, 800]
 
-# for pressure, atol in zip(pressure_values[0:], atols[2][0:]):
-#     print(f"Running case: P={pressure:.1e}")
-#     festim_model_standard(
-#         T=500,
-#         pressure=pressure,
-#         foldername=f"results/testing/P={pressure:.1e}",
-#         steady=False,
-#         regime="surf",
-#         atol=atol,
-#     )
+    # for pressure, atol in zip(pressure_values[0:], atols[2][0:]):
+    #     print(f"Running case: P={pressure:.1e}")
+    #     festim_model_standard(
+    #         T=500,
+    #         pressure=pressure,
+    #         foldername=f"results/testing/P={pressure:.1e}",
+    #         steady=False,
+    #         regime="surf",
+    #         atol=atol,
+    #     )
 
-##### pressure testing ##### #
-for P_value, atol in zip(pressure_values, atols):
-    print(f"Running at {P_value:.1e} Pa")
-    festim_model_standard(
-        T=800,
-        pressure=P_value,
-        foldername=f"results/pressure_testing/P={P_value:.0e}",
-        regime="surf",
-        steady=False,
-        atol=atol,
-    )
+    ##### pressure testing ##### #
+    for P_value, atol in zip(pressure_values, atols):
+        print(f"Running at {P_value:.1e} Pa")
+        festim_model_standard(
+            T=800,
+            pressure=P_value,
+            foldername=f"results/pressure_testing/P={P_value:.0e}",
+            regime="surf",
+            steady=False,
+            atol=atol,
+        )
 
-# test temperture at constant pressure
+    # test temperture at constant pressure
 
-# test_temp_values = np.linspace(300, 800, num=10)
-# for temp_value in test_temp_values:
-#     print(f"Testing case P=1e+03, T={temp_value:.1f}")
-#     festim_model_standard(
-#         T=temp_value,
-#         pressure=1e3,
-#         foldername=f"results/parameter_exploration/transient/P=1.0e+03/T={temp_value:.0f}",
-#         # foldername=f"results/parameter_exploration/transient/temp_testing/P=1.0e+03/T={temp_value:.0f}",
-#         steady=False,
-#     )
+    # test_temp_values = np.linspace(300, 800, num=10)
+    # for temp_value in test_temp_values:
+    #     print(f"Testing case P=1e+03, T={temp_value:.1f}")
+    #     festim_model_standard(
+    #         T=temp_value,
+    #         pressure=1e3,
+    #         foldername=f"results/parameter_exploration/transient/P=1.0e+03/T={temp_value:.0f}",
+    #         # foldername=f"results/parameter_exploration/transient/temp_testing/P=1.0e+03/T={temp_value:.0f}",
+    #         steady=False,
+    #     )
 
-# # test pressure and temperature
+    # # test pressure and temperature
 
-# for pressure_value, atol in zip(pressure_values, atols):
-#     for temp_value in test_temp_values:
-#         print(f"Testing case P={pressure_value:.0e}, T={temp_value:.0f}")
-#         festim_model_standard(
-#             T=temp_value,
-#             pressure=pressure_value,
-#             foldername=f"results/parameter_exploration/P={pressure_value:.0e}/T={temp_value:.0f}",
-#             steady=False,
-#             regime="surf",
-#             atol=atol,
-#         )
+    # for pressure_value, atol in zip(pressure_values, atols):
+    #     for temp_value in test_temp_values:
+    #         print(f"Testing case P={pressure_value:.0e}, T={temp_value:.0f}")
+    #         festim_model_standard(
+    #             T=temp_value,
+    #             pressure=pressure_value,
+    #             foldername=f"results/parameter_exploration/P={pressure_value:.0e}/T={temp_value:.0f}",
+    #             steady=False,
+    #             regime="surf",
+    #             atol=atol,
+    #         )
