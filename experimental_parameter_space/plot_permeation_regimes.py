@@ -102,8 +102,8 @@ W_squared = W_to_pressure(W=Ps_squared)
 plt.plot(Ps_linear, W_linear * 1000, linestyle="--", color="gray")
 plt.plot(Ps_squared, W_squared**0.5 * 100, linestyle="--", color="gray")
 
-plt.annotate(r"$\propto P$", (1e1, 2e2), color="gray")
-plt.annotate(r"$\propto P^{0.5}$", (3e-2, 4e-2), color="gray")
+plt.annotate(r"$\propto W \propto \sqrt{P}$", (3.5e0, 1.5e2), color="gray")
+plt.annotate(r"$\propto W^{2} \propto P$", (1.75e-2, 4e-2), color="gray")
 
 ax = plt.gca()
 ax.spines["top"].set_visible(False)
