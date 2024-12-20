@@ -9,6 +9,127 @@ from matplotlib import cm
 # plt.rc("font", family="serif", size=12)
 
 
+def plot_pressure_with_upstream_pressure():
+    P_data = []
+    t_data = []
+    surface_flux_data = []
+
+    for P_value in test_pressure_values:
+        run_data = np.genfromtxt(
+            f"results/parameter_exploration/P={P_value:.2e}/T=700/permeation_standard.csv",
+            delimiter=",",
+            names=True,
+        )
+
+        t = run_data["ts"]
+        surface_flux = run_data["solute_flux_surface_2_H_m2_s1"] * -1
+
+        time_to_steay_ind = np.where(surface_flux > 0.999 * surface_flux[-1])[0][0]
+        t, surface_flux = t[:time_to_steay_ind], surface_flux[:time_to_steay_ind]
+
+        P = pressure_from_flux(flux=surface_flux, t=t, T=700)
+
+        P_data.append(P)
+        t_data.append(t)
+        surface_flux_data.append(surface_flux)
+
+    norm = LogNorm(vmin=min(test_pressure_values), vmax=max(test_pressure_values))
+    colorbar = cm.viridis
+    sm = plt.cm.ScalarMappable(cmap=colorbar, norm=norm)
+    colours = [colorbar(norm(i)) for i in test_pressure_values]
+
+    fig, axs = plt.subplots(2, 1, sharex=True, figsize=(6, 8))
+
+    # Plot on the first axis
+    for colour, flux_values, t_values in zip(colours, surface_flux_data, t_data):
+        axs[0].plot(t_values, flux_values, color=colour)
+    axs[0].set_ylabel(r"Permeation flux (H m$^{-2}$ s$^{-1}$)")
+    axs[0].set_ylim(bottom=1e15)
+    axs[0].set_yscale("log")
+    axs[0].spines["top"].set_visible(False)
+    axs[0].spines["right"].set_visible(False)
+    axs[0].set_title(r"T=700 K")
+
+    # Plot on the second axis
+    for colour, P_values, t_values in zip(colours, P_data, t_data):
+        axs[1].plot(t_values, P_values, color=colour)
+    axs[1].set_ylabel(r"Downstream pressure (Pa)")
+    axs[1].set_xlabel(r"Time (s)")
+    # axs[1].set_xscale("log")
+    # axs[1].set_ylim(bottom=1e12)
+
+    axs[1].set_yscale("log")
+    axs[1].set_ylim(1e-01, 1e3)
+    axs[1].set_xlim(left=0)
+    # axs[1].set_ylim(bottom=0)
+    axs[1].spines["top"].set_visible(False)
+    axs[1].spines["right"].set_visible(False)
+
+    fig.colorbar(sm, label=r"Upstream pressure (Pa)", ax=axs, shrink=0.75)
+
+
+def plot_pressure_with_temperature():
+    P_data = []
+    t_data = []
+    surface_flux_data = []
+
+    for T_value in test_temperature_values:
+        run_data = np.genfromtxt(
+            f"results/parameter_exploration/P=1.00e+05/T={T_value:.0f}/permeation_standard.csv",
+            delimiter=",",
+            names=True,
+        )
+
+        t = run_data["ts"]
+        surface_flux = run_data["solute_flux_surface_2_H_m2_s1"] * -1
+
+        time_to_steay_ind = np.where(surface_flux > 0.999 * surface_flux[-1])[0][0]
+        t, surface_flux = t[:time_to_steay_ind], surface_flux[:time_to_steay_ind]
+
+        P = pressure_from_flux(flux=surface_flux, t=t, T=700)
+
+        P_data.append(P)
+        t_data.append(t)
+        surface_flux_data.append(surface_flux)
+
+    norm = Normalize(
+        vmin=min(test_temperature_values), vmax=max(test_temperature_values)
+    )
+    colorbar = cm.inferno
+    sm = plt.cm.ScalarMappable(cmap=colorbar, norm=norm)
+    colours = [colorbar(norm(i)) for i in test_temperature_values]
+
+    normalised_fluxes = []
+    for fluxes in surface_flux_data:
+        normalised_fluxes.append(fluxes / fluxes[-1])
+
+    fig, axs = plt.subplots(2, 1, sharex=True, figsize=(6, 8))
+
+    # Plot on the first axis
+    for colour, flux_values, t_values in zip(colours, surface_flux_data, t_data):
+        axs[0].plot(t_values, flux_values, color=colour)
+    axs[0].set_ylabel(r"Permeation flux (H m$^{-2}$ s$^{-1}$)")
+    axs[0].set_ylim(bottom=1e12)
+    axs[0].set_yscale("log")
+    axs[0].spines["top"].set_visible(False)
+    axs[0].spines["right"].set_visible(False)
+    axs[0].set_title(r"P$_{\mathrm{up}}$=10$^{5}$ Pa")
+
+    # Plot on the second axis
+    for colour, P_values, t_values in zip(colours, P_data, t_data):
+        axs[1].plot(t_values, P_values, color=colour)
+    axs[1].set_ylabel(r"Downstream pressure (Pa)")
+    axs[1].set_xlabel(r"Time (s)")
+    axs[1].set_xscale("log")
+    axs[1].set_xlim(left=1e1)
+    axs[1].set_yscale("log")
+    axs[1].set_ylim(1e-01, 1e3)
+    axs[1].spines["top"].set_visible(False)
+    axs[1].spines["right"].set_visible(False)
+
+    fig.colorbar(sm, label=r"Temperature (K)", ax=axs, shrink=0.75)
+
+
 def plot_pressure_and_temp():
     P_data = []
     t_data = []
@@ -178,12 +299,12 @@ def plot_pressure_ranges_with_PRF():
     PRF_values = [1, 10, 100, 1000]
     norm = LogNorm(vmin=min(PRF_values), vmax=max(PRF_values))
     colorbar = cm.viridis
-    sm = plt.cm.ScalarMappable(cmap=colorbar, norm=norm)
     colours = [colorbar(norm(i)) for i in PRF_values]
 
     # pressure gauge range 1 Torr
-    gauge_max = 1 * 133.3
-    # min resolution 0.05% of full scale
+    Torr_model = 1
+    gauge_max = Torr_model * 133.3
+    # min detectable pressure 0.05% of full scale
     gauge_min = 0.0005 * gauge_max
 
     x_min, x_max = 6e1, 1e6
@@ -194,7 +315,7 @@ def plot_pressure_ranges_with_PRF():
     plt.hlines(gauge_min, xmin=x_values[0], xmax=x_values[-1], color="grey")
     plt.hlines(gauge_max, xmin=x_values[0], xmax=x_values[-1], color="grey")
     plt.annotate(
-        "Baratron 0.1 torr gauge range",
+        f"Baratron {Torr_model} Torr gauge range",
         xy=(x_values[2], gauge_max * 1.5),
         color="grey",
         ha="left",
@@ -228,131 +349,11 @@ def plot_pressure_ranges_with_PRF():
     # plt.colorbar(sm, label=r"Temperature (K)", ax=ax)
 
 
-def plot_pressure_with_upstream_pressure():
-    P_data = []
-    t_data = []
-    surface_flux_data = []
-
-    for P_value in test_pressure_values:
-        run_data = np.genfromtxt(
-            f"results/parameter_exploration/P={P_value:.2e}/T=700/permeation_standard.csv",
-            delimiter=",",
-            names=True,
-        )
-
-        t = run_data["ts"]
-        surface_flux = run_data["solute_flux_surface_2_H_m2_s1"] * -1
-
-        time_to_steay_ind = np.where(surface_flux > 0.999 * surface_flux[-1])[0][0]
-        t, surface_flux = t[:time_to_steay_ind], surface_flux[:time_to_steay_ind]
-
-        P = pressure_from_flux(flux=surface_flux, t=t, T=700)
-
-        P_data.append(P)
-        t_data.append(t)
-        surface_flux_data.append(surface_flux)
-
-    norm = LogNorm(vmin=min(test_pressure_values), vmax=max(test_pressure_values))
-    colorbar = cm.viridis
-    sm = plt.cm.ScalarMappable(cmap=colorbar, norm=norm)
-    colours = [colorbar(norm(i)) for i in test_pressure_values]
-
-    fig, axs = plt.subplots(2, 1, sharex=True, figsize=(6, 8))
-
-    # Plot on the first axis
-    for colour, flux_values, t_values in zip(colours, surface_flux_data, t_data):
-        axs[0].plot(t_values, flux_values, color=colour)
-    axs[0].set_ylabel(r"Permeation flux (H m$^{-2}$ s$^{-1}$)")
-    axs[0].set_ylim(bottom=1e15)
-    axs[0].set_yscale("log")
-    axs[0].spines["top"].set_visible(False)
-    axs[0].spines["right"].set_visible(False)
-    axs[0].set_title(r"T=700 K")
-
-    # Plot on the second axis
-    for colour, P_values, t_values in zip(colours, P_data, t_data):
-        axs[1].plot(t_values, P_values, color=colour)
-    axs[1].set_ylabel(r"Downstream pressure (Pa)")
-    axs[1].set_xlabel(r"Time (s)")
-    # axs[1].set_xscale("log")
-    # axs[1].set_ylim(bottom=1e12)
-
-    axs[1].set_yscale("log")
-    axs[1].set_ylim(1e-01, 1e3)
-    axs[1].set_xlim(left=0)
-    # axs[1].set_ylim(bottom=0)
-    axs[1].spines["top"].set_visible(False)
-    axs[1].spines["right"].set_visible(False)
-
-    fig.colorbar(sm, label=r"Upstream pressure (Pa)", ax=axs, shrink=0.75)
-
-
-def plot_pressure_with_temperature():
-    P_data = []
-    t_data = []
-    surface_flux_data = []
-
-    for T_value in test_temperature_values:
-        run_data = np.genfromtxt(
-            f"results/parameter_exploration/P=1.00e+05/T={T_value:.0f}/permeation_standard.csv",
-            delimiter=",",
-            names=True,
-        )
-
-        t = run_data["ts"]
-        surface_flux = run_data["solute_flux_surface_2_H_m2_s1"] * -1
-
-        time_to_steay_ind = np.where(surface_flux > 0.999 * surface_flux[-1])[0][0]
-        t, surface_flux = t[:time_to_steay_ind], surface_flux[:time_to_steay_ind]
-
-        P = pressure_from_flux(flux=surface_flux, t=t, T=700)
-
-        P_data.append(P)
-        t_data.append(t)
-        surface_flux_data.append(surface_flux)
-
-    norm = Normalize(
-        vmin=min(test_temperature_values), vmax=max(test_temperature_values)
-    )
-    colorbar = cm.inferno
-    sm = plt.cm.ScalarMappable(cmap=colorbar, norm=norm)
-    colours = [colorbar(norm(i)) for i in test_temperature_values]
-
-    normalised_fluxes = []
-    for fluxes in surface_flux_data:
-        normalised_fluxes.append(fluxes / fluxes[-1])
-
-    fig, axs = plt.subplots(2, 1, sharex=True, figsize=(6, 8))
-
-    # Plot on the first axis
-    for colour, flux_values, t_values in zip(colours, surface_flux_data, t_data):
-        axs[0].plot(t_values, flux_values, color=colour)
-    axs[0].set_ylabel(r"Permeation flux (H m$^{-2}$ s$^{-1}$)")
-    axs[0].set_ylim(bottom=1e12)
-    axs[0].set_yscale("log")
-    axs[0].spines["top"].set_visible(False)
-    axs[0].spines["right"].set_visible(False)
-    axs[0].set_title(r"P$_{\mathrm{up}}$=10$^{5}$ Pa")
-
-    # Plot on the second axis
-    for colour, P_values, t_values in zip(colours, P_data, t_data):
-        axs[1].plot(t_values, P_values, color=colour)
-    axs[1].set_ylabel(r"Downstream pressure (Pa)")
-    axs[1].set_xlabel(r"Time (s)")
-    axs[1].set_xscale("log")
-    axs[1].set_xlim(left=1e1)
-    axs[1].set_yscale("log")
-    axs[1].set_ylim(1e-01, 1e3)
-    axs[1].spines["top"].set_visible(False)
-    axs[1].spines["right"].set_visible(False)
-
-    fig.colorbar(sm, label=r"Temperature (K)", ax=axs, shrink=0.75)
-
-
-plot_pressure_and_temp()
-plot_pressure_ranges()
+# plot_pressure_with_upstream_pressure()
+# plot_pressure_with_temperature()
+# plot_pressure_and_temp()
+# plot_pressure_ranges()
 plot_pressure_ranges_with_PRF()
-plot_pressure_with_upstream_pressure()
-plot_pressure_with_temperature()
+
 
 plt.show()
