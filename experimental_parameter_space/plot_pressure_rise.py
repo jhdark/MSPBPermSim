@@ -49,23 +49,6 @@ def plot_pressure_and_temp():
     sm_P = plt.cm.ScalarMappable(cmap=colorbar_P, norm=norm_P)
     colours_P = [colorbar_P(norm_P(P)) for P in test_pressure_values]
 
-    # plt.figure()
-    # for P_values, t_values in zip(P_data, t_data):
-    #     for pressure, time, colour in zip(P_values, t_values, colours):
-    #         plt.plot(time, pressure, color=colour)
-
-    # plt.xlabel("time (s)")
-    # plt.ylabel(r"Downstream pressure (Pa)")
-    # plt.xscale("log")
-    # plt.yscale("log")
-    # plt.ylim(1e-01, 1e3)
-    # plt.xlim(left=5e1)
-    # ax = plt.gca()
-    # ax.spines["top"].set_visible(False)
-    # ax.spines["right"].set_visible(False)
-
-    # plt.colorbar(sm, label=r"Temperature (K)", ax=ax)
-
     fig, axs = plt.subplots(2, 1, sharex=True, figsize=(6, 8))
 
     # Plot on the first axis
@@ -200,8 +183,8 @@ def plot_pressure_ranges_with_PRF():
 
     # pressure gauge range 1 Torr
     gauge_max = 1 * 133.3
-    # min resolution 0.001% of full scale
-    gauge_min = 0.00001 * gauge_max
+    # min resolution 0.05% of full scale
+    gauge_min = 0.0005 * gauge_max
 
     x_min, x_max = 6e1, 1e6
     x_values = np.geomspace(x_min, 1e5, num=100)
