@@ -15,7 +15,7 @@ for T_value in test_temperature_values:
     )
     t = run_data["ts"]
     surface_flux = run_data["solute_flux_surface_2_H_m2_s1"] * -1
-    time_ind = np.where(surface_flux > 0.99 * surface_flux[-1])[0][0]
+    time_ind = np.where(surface_flux > 0.999 * surface_flux[-1])[0][0]
     time_to_steady.append(t[time_ind])
 
 plt.figure()
