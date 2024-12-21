@@ -86,7 +86,7 @@ def plot_pressure_with_temperature():
         time_to_steay_ind = np.where(surface_flux > 0.999 * surface_flux[-1])[0][0]
         t, surface_flux = t[:time_to_steay_ind], surface_flux[:time_to_steay_ind]
 
-        P = pressure_from_flux(flux=surface_flux, t=t, T=700)
+        P = pressure_from_flux(flux=surface_flux, t=t, T=T_value)
 
         P_data.append(P)
         t_data.append(t)
@@ -349,11 +349,11 @@ def plot_pressure_ranges_with_PRF():
     # plt.colorbar(sm, label=r"Temperature (K)", ax=ax)
 
 
-# plot_pressure_with_upstream_pressure()
-# plot_pressure_with_temperature()
-# plot_pressure_and_temp()
-# plot_pressure_ranges()
-plot_pressure_ranges_with_PRF()
+if __name__ == "__main__":
+    # plot_pressure_with_upstream_pressure()
+    plot_pressure_with_temperature()
+    # plot_pressure_and_temp()
+    # plot_pressure_ranges()
+    # plot_pressure_ranges_with_PRF()
 
-
-plt.show()
+    plt.show()
