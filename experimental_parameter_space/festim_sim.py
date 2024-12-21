@@ -4,7 +4,13 @@ from scipy.integrate import cumulative_trapezoid
 
 
 def festim_model_standard(
-    T, pressure, foldername, regime="diff", final_time=1e7, atol=1e-08
+    T,
+    pressure,
+    foldername,
+    regime="diff",
+    final_time=1e7,
+    atol=1e-08,
+    sample_thicnkess=1e-03,
 ):
 
     import h_transport_materials as htm
@@ -34,7 +40,9 @@ def festim_model_standard(
     model_standard = F.Simulation(log_level=40)
 
     # define mesh
-    model_standard.mesh = F.MeshFromVertices(vertices=np.linspace(0, 1e-03, num=500))
+    model_standard.mesh = F.MeshFromVertices(
+        vertices=np.linspace(0, sample_thicnkess, num=500)
+    )
 
     # define material
     substrate_standard = F.Material(
@@ -113,6 +121,9 @@ def pressure_from_flux(flux, t, T):
     pipe_diameter = 5e-03
     pipe_length = 2
     downstream_volume = pipe_length * np.pi * (pipe_diameter / 2) ** 2
+
+    print(downstream_volume)
+    quit()
 
     integrated_flux = cumulative_trapezoid(flux, t, initial=0)
     A = np.pi * (sample_diameter / 2) ** 2  # m^2
