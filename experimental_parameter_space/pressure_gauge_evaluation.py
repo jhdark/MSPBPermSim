@@ -156,23 +156,24 @@ def test_gauge_range_parameters(
     plt.tight_layout()
 
 
-sample_diameter = 20e-03  # in m
-sample_thickness = 1e-03  # in m
-downstream_pipe_diameter = 5e-03  # in m
-downstream_pipe_length = 2  # in m
+if __name__ == "__main__":
+    sample_diameter = 20e-03  # in m
+    sample_thickness = 1e-03  # in m
+    downstream_pipe_diameter = 5e-03  # in m
+    downstream_pipe_length = 2  # in m
 
-downstream_volume = (
-    downstream_pipe_length * np.pi * (downstream_pipe_diameter / 2) ** 2
-)  # in m3
+    downstream_volume = (
+        downstream_pipe_length * np.pi * (downstream_pipe_diameter / 2) ** 2
+    )  # in m3
 
-test_gauge_range_parameters(
-    sample_diameter=sample_diameter,
-    sample_thickness=sample_thickness,
-    downstream_volume=downstream_volume,
-    steady_state_point=0.999,
-    temperature_max_min=[450, 750],
-    pressure_max_min=[1e2, 1e5],
-    PRF_values=[1, 10, 100, 1000],
-    gauge_model=1,
-)
-plt.show()
+    test_gauge_range_parameters(
+        sample_diameter=sample_diameter,
+        sample_thickness=sample_thickness,
+        downstream_volume=downstream_volume,
+        steady_state_point=0.999,
+        temperature_max_min=[450, 750],
+        pressure_max_min=[1e2, 1e5],
+        PRF_values=[1, 10, 100, 1000],
+        gauge_model=1,
+    )
+    plt.show()
