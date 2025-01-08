@@ -1,7 +1,7 @@
 import numpy as np
-import festim as F
 import matplotlib.pyplot as plt
 import h_transport_materials as htm
+from festim import k_B
 
 substrate_D = htm.diffusivities.filter(material="inconel_625")[0]
 substrate_D_0 = substrate_D.pre_exp.magnitude
@@ -22,27 +22,28 @@ substrate_S = htm.Solubility(
 substrate_S_0 = substrate_S.pre_exp.magnitude
 substrate_E_S = substrate_S.act_energy.magnitude
 
-k_b = F.k_B
-
-
-def W_number(K_d, thickness, pressure, diffusivity, solubility):
-    return (K_d * (pressure**0.5) * thickness) / (diffusivity * solubility)
-
-
 default_P = 1e4  # Pa
 default_e = 974e-6  # m
 default_T = 300 + 273.15  # K
 
 
-def W_testing(P=default_P, e=default_e, T=default_T):
+def evaluate_permeation_number_W(P, e, T):
+    """Returns the permeation number for a given set of experimental parameters
 
-    return W_number(
-        K_d=substrate_Kd_0 * np.exp(-substrate_E_Kd / (k_b * T)),
-        thickness=e,
-        pressure=P,
-        diffusivity=substrate_D_0 * np.exp(-substrate_E_D / (k_b * T)),
-        solubility=substrate_S_0 * np.exp(-substrate_E_S / (k_b * T)),
-    )
+    Args:
+        P (float): Upstream pressure (Pa)
+        e (float): Sample thickness (m)
+        T (float): Temperature (K)
+
+    Returns
+        (float): Permeation number, W
+    """
+
+    K_d = substrate_Kd_0 * np.exp(-substrate_E_Kd / (k_B * T))
+    diffusivity = substrate_D_0 * np.exp(-substrate_E_D / (k_B * T))
+    solubility = substrate_S_0 * np.exp(-substrate_E_S / (k_B * T))
+
+    return (K_d * (P**0.5) * e) / (diffusivity * solubility)
 
 
 P_testing = np.geomspace(
@@ -59,7 +60,7 @@ e_plot = [0.2, 0.3, 0.4, 0.5, 0.6, 0.7, 0.8, 0.9, 1.0]
 
 plt.figure()
 plt.title(f"T = {default_T} K, e = {default_e:.1e} m")
-W_test_P = W_testing(P=P_testing)
+W_test_P = evaluate_permeation_number_W(P=P_testing, e=default_e, T=default_T)
 plt.plot(P_testing, W_test_P, color="black")
 plt.xscale("log")
 plt.ylabel("Permeation number, W")
@@ -73,7 +74,7 @@ plt.tight_layout()
 
 plt.figure()
 plt.title(f"T = {default_T} K, P = {default_P:.1e} Pa")
-W_test_e = W_testing(e=e_testing)
+W_test_e = evaluate_permeation_number_W(P=default_P, e=e_testing, T=default_T)
 plt.plot(e_testing, W_test_e, color="black")
 plt.ylabel("Permeation number, W")
 plt.xlabel("Sample thickness (m)")
@@ -87,7 +88,7 @@ plt.tight_layout()
 
 plt.figure()
 plt.title(f"P = {default_P:.1e} Pa, e = {default_e:.1e} m")
-W_test_T = W_testing(T=T_testing)
+W_test_T = evaluate_permeation_number_W(P=default_P, e=default_e, T=T_testing)
 plt.plot(T_testing, W_test_T, color="black")
 plt.ylabel("Permeation number, W")
 plt.xlabel("Temperature (K)")
@@ -99,7 +100,7 @@ ax.spines["right"].set_visible(False)
 plt.tight_layout()
 
 X, Y = np.meshgrid(P_testing, e_testing)
-Z = W_testing(P=X, e=Y)
+Z = evaluate_permeation_number_W(P=X, e=Y, T=default_T)
 
 plt.figure(figsize=(8, 6))
 plt.title(f"T = {default_T} K")
