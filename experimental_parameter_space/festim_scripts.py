@@ -322,6 +322,25 @@ def test_gauge_range_parameters(
     plt.tight_layout()
 
 
+def evaluate_permeation_number_W(P, e, T, K_d_0, E_K_d, D_0, E_D, S_0, E_S):
+    """Returns the permeation number for a given set of experimental parameters
+
+    Args:
+        P (float): Upstream pressure (Pa)
+        e (float): Sample thickness (m)
+        T (float): Temperature (K)
+
+    Returns
+        (float): Permeation number, W
+    """
+
+    K_d = K_d_0 * np.exp(-E_K_d / (F.k_B * T))
+    diffusivity = D_0 * np.exp(-E_D / (F.k_B * T))
+    solubility = S_0 * np.exp(-E_S / (F.k_B * T))
+
+    return (K_d * (P**0.5) * e) / (diffusivity * solubility)
+
+
 if __name__ == "__main__":
 
     for P_up in test_pressure_values:
