@@ -1,16 +1,26 @@
 import numpy as np
 import festim as F
 import matplotlib.pyplot as plt
-from matplotlib.colors import TwoSlopeNorm
+import h_transport_materials as htm
 
-from festim_sim import (
-    substrate_D_0,
-    substrate_E_D,
-    substrate_S_0,
-    substrate_E_S,
-    substrate_Kd_0,
-    substrate_E_Kd,
+substrate_D = htm.diffusivities.filter(material="inconel_625")[0]
+substrate_D_0 = substrate_D.pre_exp.magnitude
+substrate_E_D = substrate_D.act_energy.magnitude
+
+substrate_recomb = htm.recombination_coeffs.filter(material="inconel_625")[1]
+substrate_Kr_0 = substrate_recomb.pre_exp.magnitude
+substrate_E_Kr = substrate_recomb.act_energy.magnitude
+
+substrate_diss = htm.dissociation_coeffs.filter(material="inconel_625")[1]
+substrate_Kd_0 = substrate_diss.pre_exp.magnitude
+substrate_E_Kd = substrate_diss.act_energy.magnitude
+
+substrate_S = htm.Solubility(
+    S_0=(substrate_diss.pre_exp / substrate_recomb.pre_exp) ** 0.5,
+    E_S=(0.5 * (substrate_diss.act_energy - substrate_recomb.act_energy)),
 )
+substrate_S_0 = substrate_S.pre_exp.magnitude
+substrate_E_S = substrate_S.act_energy.magnitude
 
 k_b = F.k_B
 
@@ -46,8 +56,6 @@ T_testing = np.linspace(200, 400, num=100) + 273.15  # K
 e_ticks = np.linspace(2e-4, 1e-3, num=9)
 e_plot = [0.2, 0.3, 0.4, 0.5, 0.6, 0.7, 0.8, 0.9, 1.0]
 
-plt.rc("text", usetex=True)
-plt.rc("font", family="serif", size=12)
 
 plt.figure()
 plt.title(f"T = {default_T} K, e = {default_e:.1e} m")
@@ -103,8 +111,8 @@ plt.title(f"T = {default_T} K")
 CS = plt.contourf(X, Y, Z, levels=1000, cmap="viridis")
 ax = plt.gca()
 contour_lines = ax.contour(X, Y, Z, levels=[1, 4, 16], colors="white")
-for c in CS.collections:
-    c.set_edgecolor("face")
+# for c in CS.collections:
+#     c.set_edgecolor("face")
 ax.clabel(contour_lines, contour_lines.levels, fontsize=10)
 cbar = plt.colorbar(CS, format="%.1f")
 cbar.set_label("Permeation number, W")
