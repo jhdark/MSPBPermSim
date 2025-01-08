@@ -375,8 +375,6 @@ def compute_permeation_flux(
 
 if __name__ == "__main__":
 
-    quit()
-
     for P_up in test_pressure_values:
         for T in test_temperature_values:
             print(f"Testing case P={P_up:.2e}, T={T:.0f}")
