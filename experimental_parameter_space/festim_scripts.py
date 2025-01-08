@@ -4,6 +4,28 @@ from scipy.integrate import cumulative_trapezoid
 import matplotlib.pyplot as plt
 from matplotlib.colors import LogNorm
 from matplotlib import cm
+import h_transport_materials as htm
+
+# obtain material properties
+# inconel
+substrate_D = htm.diffusivities.filter(material="inconel_625")[0]
+substrate_D_0 = substrate_D.pre_exp.magnitude
+substrate_E_D = substrate_D.act_energy.magnitude
+
+substrate_recomb = htm.recombination_coeffs.filter(material="inconel_625")[1]
+substrate_Kr_0 = substrate_recomb.pre_exp.magnitude
+substrate_E_Kr = substrate_recomb.act_energy.magnitude
+
+substrate_diss = htm.dissociation_coeffs.filter(material="inconel_625")[1]
+substrate_Kd_0 = substrate_diss.pre_exp.magnitude
+substrate_E_Kd = substrate_diss.act_energy.magnitude
+
+substrate_S = htm.Solubility(
+    S_0=(substrate_diss.pre_exp / substrate_recomb.pre_exp) ** 0.5,
+    E_S=(0.5 * (substrate_diss.act_energy - substrate_recomb.act_energy)),
+)
+substrate_S_0 = substrate_S.pre_exp.magnitude
+substrate_E_S = substrate_S.act_energy.magnitude
 
 test_temperature_values = np.linspace(450, 750, num=7)
 test_pressure_values = np.geomspace(1e2, 1e5, num=10)
@@ -18,6 +40,14 @@ def festim_model_standard(
     final_time=1e7,
     atol=1e-08,
     sample_thickness=1e-03,
+    D_0=substrate_D_0,
+    E_D=substrate_E_D,
+    S_0=substrate_S_0,
+    E_S=substrate_E_S,
+    Kr_0=substrate_Kr_0,
+    E_Kr=substrate_E_Kr,
+    Kd_0=substrate_Kd_0,
+    E_Kd=substrate_E_Kd,
 ):
     """Run a standard festim model for permeation of hydrogen through a sample
 
@@ -32,29 +62,6 @@ def festim_model_standard(
         sample_thicnkess (float, optional): thickness of the sample in m. Defaults to 1e-03.
     """
 
-    import h_transport_materials as htm
-
-    # obtain material properties
-    # inconel
-    substrate_D = htm.diffusivities.filter(material="inconel_625")[0]
-    substrate_D_0 = substrate_D.pre_exp.magnitude
-    substrate_E_D = substrate_D.act_energy.magnitude
-
-    substrate_recomb = htm.recombination_coeffs.filter(material="inconel_625")[1]
-    substrate_Kr_0 = substrate_recomb.pre_exp.magnitude
-    substrate_E_Kr = substrate_recomb.act_energy.magnitude
-
-    substrate_diss = htm.dissociation_coeffs.filter(material="inconel_625")[1]
-    substrate_Kd_0 = substrate_diss.pre_exp.magnitude
-    substrate_E_Kd = substrate_diss.act_energy.magnitude
-
-    substrate_S = htm.Solubility(
-        S_0=(substrate_diss.pre_exp / substrate_recomb.pre_exp) ** 0.5,
-        E_S=(0.5 * (substrate_diss.act_energy - substrate_recomb.act_energy)),
-    )
-    substrate_S_0 = substrate_S.pre_exp.magnitude
-    substrate_E_S = substrate_S.act_energy.magnitude
-
     # build festim model
     model_standard = F.Simulation(log_level=40)
 
@@ -64,9 +71,7 @@ def festim_model_standard(
     )
 
     # define material
-    substrate_standard = F.Material(
-        id=1, D_0=substrate_D_0, E_D=substrate_E_D, S_0=substrate_S_0, E_S=substrate_E_S
-    )
+    substrate_standard = F.Material(id=1, D_0=D_0, E_D=E_D, S_0=S_0, E_S=E_S)
     model_standard.materials = F.Materials([substrate_standard])
 
     # define temperature
@@ -85,12 +90,8 @@ def festim_model_standard(
         ]
     elif regime == "surf":
         model_standard.boundary_conditions = [
-            F.RecombinationFlux(
-                Kr_0=substrate_Kr_0, E_Kr=substrate_E_Kr, order=2, surfaces=[1, 2]
-            ),
-            F.DissociationFlux(
-                Kd_0=substrate_Kd_0, E_Kd=substrate_E_Kd, P=pressure, surfaces=[1]
-            ),
+            F.RecombinationFlux(Kr_0=Kr_0, E_Kr=E_Kr, order=2, surfaces=[1, 2]),
+            F.DissociationFlux(Kd_0=Kd_0, E_Kd=E_Kd, P=pressure, surfaces=[1]),
         ]
     else:
         ValueError(f"permeation regime {regime} not recognised, should be diff or surf")
@@ -341,7 +342,40 @@ def evaluate_permeation_number_W(P, e, T, K_d_0, E_K_d, D_0, E_D, S_0, E_S):
     return (K_d * (P**0.5) * e) / (diffusivity * solubility)
 
 
+def compute_permeation_flux(
+    T,
+    upstream_pressure,
+    foldername,
+    final_time,
+    sample_thickness,
+    D_0,
+    E_D,
+    Kr_0,
+    E_Kr,
+    Kd_0,
+    E_Kd,
+):
+
+    festim_model_standard(
+        T=T,
+        pressure=upstream_pressure,
+        foldername=foldername,
+        regime="surf",
+        final_time=final_time,
+        atol=1e-08,
+        sample_thickness=sample_thickness,
+        D_0=D_0,
+        E_D=E_D,
+        Kr_0=Kr_0,
+        E_Kr=E_Kr,
+        Kd_0=Kd_0,
+        E_Kd=E_Kd,
+    )
+
+
 if __name__ == "__main__":
+
+    quit()
 
     for P_up in test_pressure_values:
         for T in test_temperature_values:
