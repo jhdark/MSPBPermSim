@@ -166,20 +166,6 @@ def pressure_from_flux(
     return P
 
 
-def festim_model_case_700K_1e5Pa(sample_thickness):
-    """Run a standard festim model for permeation of hydrogen through a sample at 700K and 1e5 Pa"""
-
-    festim_model_standard(
-        sample_thickness=sample_thickness,
-        T=700,
-        pressure=1e5,
-        foldername="results/",
-        regime="diff",
-        atol=1e8,
-        final_time=5000,
-    )
-
-
 def test_gauge_range_parameters(
     sample_diameter,
     sample_thickness,
