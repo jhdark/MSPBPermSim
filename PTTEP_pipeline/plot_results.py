@@ -3,9 +3,7 @@ from matplotlib.colors import Normalize
 from matplotlib import cm
 import numpy as np
 from scipy.integrate import cumulative_trapezoid
-from matplotlib import ticker
 
-# from labellines import labelLine, labelLines
 from pipe_losses import temperature_values, pressure_values
 
 
@@ -23,70 +21,23 @@ def hydrogen_atoms_to_mass(atom_count: float) -> float:
     return atom_count * atomic_mass_h
 
 
-def plot_standard():
-    data = np.genfromtxt("results/derived_quantities.csv", delimiter=",", names=True)
+def label_lines(lines, xvals, colours):
+    for line, xval, colour in zip(lines, xvals, colours):
+        xdata, ydata = line.get_xdata(), line.get_ydata()
+        yval = np.interp(xval, xdata, ydata)  # Interpolate y-value at xval
+        label = line.get_label()
 
-    t = data["ts"]
-    flux = data["Flux_surface_2_0"] * -1
-
-    plt.figure()
-    plt.plot(t, flux)
-    plt.xlabel("Time (s)")
-    plt.ylabel("Surface Flux (m²/s)")
-
-
-def plot_item_1_1a():
-    ts = []
-    fluxes = []
-    for T in temperature_values:
-        for P in pressure_values:
-            data = np.genfromtxt(
-                f"results/item_1_1a/{T:.1f}K/{P:.2e}Pa/derived_quantities.csv",
-                delimiter=",",
-                names=True,
-            )
-            ts.append(data["ts"])
-            fluxes.append(data["Flux_surface_2_0"] * -1)
-
-    plt.figure()
-    plt.plot(ts, fluxes)
-    plt.xlabel("Time (s)")
-    plt.ylabel("Surface Flux (m²/s)")
-
-
-def plot_inventories_by_temperature():
-    ts = []
-    inventories = []
-    for T in temperature_values:
-        data = np.genfromtxt(
-            f"results/item_1_1a/{T:.1f}K/9.00+06Pa/derived_quantities.csv",
-            delimiter=",",
-            names=True,
+        plt.annotate(
+            label,
+            xy=(xval, yval),
+            xytext=(0, 0),
+            textcoords="offset points",
+            fontsize=12,
+            va="center",
+            ha="center",
+            bbox=dict(facecolor="white", edgecolor="none"),
+            color=colour,
         )
-        ts.append(data["ts"])
-        inventories.append(data["Total_solute_volume_1_H_m2"])
-
-    pipe_wall_area = (np.pi * (323.9e-03 / 2) ** 2) - (
-        np.pi * ((329.9e-03 - 14.3e-03) / 2) ** 2
-    )
-    pipe_length = 2499  # m
-
-    inventories = np.array(inventories) * pipe_wall_area * pipe_length
-    inventories = hydrogen_atoms_to_mass(inventories)
-
-    norm_T = Normalize(vmin=min(pressure_values), vmax=max(pressure_values))
-    colorbar_T = cm.inferno
-    sm_T = plt.cm.ScalarMappable(cmap=colorbar_T, norm=norm_T)
-    colours_T = [colorbar_T(norm_T(i)) for i in pressure_values]
-
-    plt.figure()
-    for t, inv, c in zip(ts, inventories, colours_T):
-        plt.plot(t, inv, color=c)
-    plt.xlabel("Time (s)")
-    plt.ylabel("Hydrogen losses (g)")
-
-    ax = plt.gca()
-    plt.colorbar(sm_T, label=r"Temperature (K)", ax=ax, shrink=0.75)
 
 
 def plot_inventory_and_surface_flux(pressure_value: float, temperature_value: float):
@@ -96,7 +47,7 @@ def plot_inventory_and_surface_flux(pressure_value: float, temperature_value: fl
         names=True,
     )
     ts = data["ts"]
-    inventories = data["Total_solute_volume_1_H_m1"]
+    inventory = data["Total_solute_volume_1_H_m1"]
     surface_fluxes = data["solute_flux_surface_2_H_m1_s1"] * -1
 
     one_year = 3600 * 24 * 365
@@ -104,16 +55,16 @@ def plot_inventory_and_surface_flux(pressure_value: float, temperature_value: fl
 
     pipe_length = 1000  # m
 
-    inventories = np.array(inventories) * pipe_length
-    inventories = hydrogen_atoms_to_mass(inventories)
+    inventory = np.array(inventory) * pipe_length
+    inventory = hydrogen_atoms_to_mass(inventory)
 
     surface_fluxes = np.array(surface_fluxes) * pipe_length  # to H/s/km
     surface_fluxes = hydrogen_atoms_to_mass(surface_fluxes) * one_year  # to g/km/yr
 
     plt.figure()
-    plt.plot(ts, inventories, color="black")
+    plt.plot(ts, inventory, color="black")
     plt.xlabel("Time (yr)")
-    plt.ylabel("Mobile Hydrogen in wall (g/km)")
+    plt.ylabel("Mobile hydrogen in wall (g/km)")
     plt.ylim(bottom=0)
     plt.xlim(0, 40)
     ax = plt.gca()
@@ -167,25 +118,6 @@ def plot_mobile_conc_field_over_time(pressure_value: float, temperature_value: f
     for data in c_data:
         c_data_g.append(hydrogen_atoms_to_mass(data))
 
-    # Function to label the lines inline
-    def label_lines(lines, xvals, colours):
-        for line, xval, colour in zip(lines, xvals, colours):
-            xdata, ydata = line.get_xdata(), line.get_ydata()
-            yval = np.interp(xval, xdata, ydata)  # Interpolate y-value at xval
-            label = line.get_label()
-
-            plt.annotate(
-                label,
-                xy=(xval, yval),
-                xytext=(0, 0),
-                textcoords="offset points",
-                fontsize=12,
-                va="center",
-                ha="center",
-                bbox=dict(facecolor="white", edgecolor="none"),
-                color=colour,
-            )
-
     # Custom x-positions for labels (closer to the start)
     label_positions = [
         x[500],
@@ -226,8 +158,8 @@ if __name__ == "__main__":
     plot_inventory_and_surface_flux(
         pressure_value=pressure_values[-1], temperature_value=temperature_values[-1]
     )
-    plot_mobile_conc_field_over_time(
-        pressure_value=pressure_values[-1], temperature_value=temperature_values[-1]
-    )
+    # plot_mobile_conc_field_over_time(
+    #     pressure_value=pressure_values[-1], temperature_value=temperature_values[-1]
+    # )
 
     plt.show()
